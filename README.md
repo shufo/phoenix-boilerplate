@@ -151,7 +151,7 @@ docker exec -it phoenix_app sh
 Fetch the logs of a container will also help you.
 
 ```
-docker logs -f phoenix_app sh
+docker logs -f phoenix_app
 ```
 
 ## Deployment
