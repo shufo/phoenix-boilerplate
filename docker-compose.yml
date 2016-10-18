@@ -1,0 +1,76 @@
+version: '2'
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: phoenix_nginx
+    hostname: nginx
+    links:
+      - app
+    ports:
+      - "80:80"
+    volumes:
+      - "./nginx.conf:/etc/nginx/nginx.conf"
+      - ".:/code"
+
+  app:
+    image: shufo/phoenix:development
+    container_name: phoenix_app
+    hostname: app
+    expose:
+      - 4000
+    ports:
+      - "4000:4000"
+      - "4001:4001"
+    working_dir: /code
+    environment:
+      - "PORT=4000"
+    volumes:
+      - ".:/code"
+    links:
+      - mysql
+      - redis
+
+  brunch:
+    image: shufo/phoenix:development
+    container_name: phoenix_brunch
+    entrypoint: ["sh", "-c", "npm install --no-bin-links && brunch watch"]
+    hostname: brunch
+    working_dir: /code
+    volumes_from:
+      - app
+    links:
+      - app
+
+  redis:
+    image: redis:alpine
+    container_name: phoenix_redis
+    hostname: redis
+    volumes:
+      - "./storage/redis:/data"
+    ports:
+      - "6379:6379"
+
+  mysql:
+    image: mysql
+    container_name: phoenix_mysql
+    hostname: mysql
+    expose:
+      - 3306
+    ports:
+      - "3306:3306"
+    environment:
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_DATABASE=phoenix"
+      - "MYSQL_USER=phoenix"
+    volumes:
+      - "./storage/mysql:/var/lib/mysql"
+      - "./database/config:/etc/mysql/conf.d"
+
+  phantomjs:
+    image: shufo/phantomjs
+    container_name: phoenix_phantomjs
+    hostname: phantomjs
+    entrypoint: sh -c
+    command: "\"echo $$(ip route | awk '/default/ {print $$3}') example.com >> /etc/hosts && /usr/local/bin/phantomjs --webdriver 8910\""
+    volumes:
+      - ".:/code"

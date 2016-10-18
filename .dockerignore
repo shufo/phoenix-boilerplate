@@ -1,0 +1,4 @@
+node_modules
+storage/*
+_build/test
+_build/dev
